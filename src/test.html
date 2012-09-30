@@ -1,0 +1,70 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Test Json fetch</title>
+<!--[if lte IE 8]><script language="javascript" type="text/javascript" src="http://people.iola.dk/olau/flot/excanvas.min.js"></script><![endif]-->
+<script language="javascript" type="text/javascript"
+	src="http://people.iola.dk/olau/flot/jquery.js"></script>
+<script language="javascript" type="text/javascript"
+	src="http://people.iola.dk/olau/flot/jquery.flot.js"></script>
+
+</head>
+<body>
+
+<script type="text/javascript">
+
+$(function () {
+	
+	$.ajax({
+	    url: "data.json",
+	    dataType: 'json',
+	    success: function(results){
+	        console.log(results.data);
+	        
+	        document.writeln('<div id="placeholder" style="width:600px;height:300px;"></div>')
+
+	        document.writeln(results.label);
+	        document.writeln("<br/>");
+	        
+	        
+	     	// zip the generated y values with the x values
+			var res = [];
+			for ( var i = 0; i < results.data.length; ++i){
+				var x = new Date(results.data[i][0]);
+				var y = results.data[i][1] ;
+				document.writeln("<pre>"+ x + "--->"+ y +"</pre>");
+				res.push([x,y])
+			}
+			
+			document.writeln("<hr/>");
+	
+			for ( var i = 0; i < res.length; ++i){
+				var x = res[i][0]
+				var y = res[i][1] ;
+				document.writeln("<pre>"+ x + "--->"+ y +"</pre>");
+			}
+			
+	        
+	        var d1 = [];
+	        for (var i = 0; i < 14; i += 0.5)
+	            d1.push([i, Math.sin(i)]);
+	        document.writeln(d1);
+	        
+	        $.plot($("#placeholder"), [res]);
+	    }
+	});
+
+	
+    
+});
+
+
+
+
+
+</script>
+
+
+</body>
+</html>

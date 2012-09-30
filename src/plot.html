@@ -1,0 +1,106 @@
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Live Plot example using Flot charts</title>
+<!--[if lte IE 8]><script language="javascript" type="text/javascript" src="http://people.iola.dk/olau/flot/excanvas.min.js"></script><![endif]-->
+<script language="javascript" type="text/javascript"
+	src="http://people.iola.dk/olau/flot/jquery.js"></script>
+<script language="javascript" type="text/javascript"
+	src="http://people.iola.dk/olau/flot/jquery.flot.js"></script>
+</head>
+<body>
+	<h1>Live plot example</h1>
+
+	<div id="placeholder" style="width: 800px; height: 600px;"></div>
+
+
+	<script type="text/javascript">
+		$(function() {
+			// we use an inline data source in the example, usually data would
+			// be fetched from a server
+
+			var url_to_fecth = 'data.json';
+			// setup control widget
+			var updateInterval = 1000;
+			// setup plot
+			var options = {
+				lines : {
+					show : true
+				},
+				points : {
+					show : true
+				},
+				series : {
+					shadowSize : 0
+				}, // drawing is faster without shadows
+				//yaxis : {
+				//	min : 0,
+				//	max : 100
+				//},
+				xaxis : {
+					show : true,
+					mode : "time",
+					timeformat : "%hh%M:%S",
+					minTickSize : [ 1, "second" ]
+				}
+			};
+
+			var plot;
+			$.ajax({
+				url : url_to_fecth,
+				method : 'GET',
+				dataType : 'json',
+				success : function(results) {
+
+					var res = [];
+					for ( var i = 0; i < results.data.length; ++i) {
+						var x = new Date(results.data[i][0]);
+						var y = results.data[i][1];
+						res.push([ x, y ]);
+					}
+
+					resToPlot = {
+						"label" : results.label,
+						"data" : res
+					};
+					plot = $.plot($("#placeholder"), [ resToPlot ], options);
+
+				}
+			});
+
+			function update() {
+
+				//alert ('update');
+				$.ajax({
+					url : url_to_fecth,
+					method : 'GET',
+					dataType : 'json',
+					success : function(results) {
+
+						console.log("heres")
+
+						var res = [];
+						for ( var i = 0; i < results.data.length; ++i) {
+							var x = new Date(results.data[i][0]);
+							var y = results.data[i][1];
+							res.push([ x, y ]);
+						}
+						resToPlot = {
+							"label" : results.label,
+							"data" : res
+						};
+						plot.setData([ resToPlot ]);
+						plot.setupGrid();
+						plot.draw();
+					}
+				});
+				setTimeout(update, updateInterval);
+			}
+			update();
+		});
+	</script>
+
+</body>
+</html>
