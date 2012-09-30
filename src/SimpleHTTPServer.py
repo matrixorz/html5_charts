@@ -1,11 +1,4 @@
-import time
-import BaseHTTPServer
-import threading
-from datetime import datetime
-import random
-import json
-import urlparse
-from SocketServer import ThreadingMixIn
+#!/usr/bin/env python
 
 """
 
@@ -19,6 +12,25 @@ Json sends a Json dummy file
 HTML plots in real time the json data
 
 """
+
+
+import time
+import BaseHTTPServer
+import threading
+from datetime import datetime
+import random
+import json
+import urlparse
+from SocketServer import ThreadingMixIn
+
+__author__ = "Ricardo FERRAZ LEAL"
+__credits__ = ["Ricardo FERRAZ LEAL"]
+__license__ = "GPL"
+__version__ = "0.1"
+__maintainer__ = "Ricardo FERRAZ LEAL"
+__email__ = "ricleal@gmail.com"
+__status__ = "Testing"
+
 
 HOST_NAME = 'localhost' # 
 PORT_NUMBER = 8080 # 
@@ -42,10 +54,10 @@ class SimulateLogFetcherThread(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
         self._stop = threading.Event()
-        self.logName = "Simulated_data"
         # This stacks contains the last stackSize readings from the log file 
-        self.stack = []
-        self.stackSize = 100
+        self.stack1 = []
+        self.stack2 = []
+        self.stackSize = 50
         self.jsonOutput = None
     
     def stop(self):
@@ -55,12 +67,12 @@ class SimulateLogFetcherThread(threading.Thread):
     def stopped(self):        
         return self._stop.isSet()
     
-    def autoAppendStack(self,el):
+    def autoAppendStack(self,stack,el):
         """ Appends the stack and
         Keeps the stack size constant """
-        if len(self.stack) > self.stackSize :
-            self.stack.pop(0)
-        self.stack.append(el)
+        if len(stack) > self.stackSize :
+            stack.pop(0)
+        stack.append(el)
             
     
     def run(self):
@@ -71,20 +83,38 @@ class SimulateLogFetcherThread(threading.Thread):
             # date format handled by javascript
             nowStr = datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
             # random value. It should come from the logger in a real example
-            value = random.randint(1,10)
-            pair = []
-            pair.append(nowStr)
-            pair.append(value)
-            self.autoAppendStack(pair)
+            value1 = random.randint(1,10)
+            pair1 = []
+            pair1.append(nowStr)
+            pair1.append(value1)
+            self.autoAppendStack(self.stack1,pair1)
             
-            out = {}
-            out["label"] = self.logName
-            out["data"] = self.stack
-                    
+            value2 = random.randint(1,10)
+            pair2 = []
+            pair2.append(nowStr)
+            pair2.append(value2)
+            self.autoAppendStack(self.stack2,pair2)
+            
+            out1 = {}
+            out1["label"] = "Sim Data 1"
+            out1["data"] = self.stack1
+            
+            out2 = {}
+            out2["label"] = "Sim Data 2"
+            out2["data"] = self.stack2
+            
+            out = [out1,out2]
+            
             self.jsonOutput = json.dumps(out)
             time.sleep(1)
 
 class JsonHandler(BaseHTTPServer.BaseHTTPRequestHandler):
+    """
+    This class will only handle the GET and POST calls to the server
+    
+    I will ignore the posts for now.
+    
+    """
     def do_HEAD(self):
         self.send_response(200)
         self.send_header("Content-type", 'application/json; charset=utf8')
@@ -130,6 +160,8 @@ class ThreadingHTTPServer(ThreadingMixIn, BaseHTTPServer.HTTPServer):
 #
 #Thread(target=serve_on_port, args=[1111]).start()
 #serve_on_port(2222)
+
+    
 
 if __name__ == '__main__':
     

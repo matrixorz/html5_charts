@@ -18,9 +18,8 @@
 
 	<script type="text/javascript">
 		$(function() {
-			// we use an inline data source in the example, usually data would
-			// be fetched from a server
-
+			
+			// URL where json data is. Eg. http://localhost:8080/data.json
 			var url_to_fecth = 'data.json';
 			// setup control widget
 			var updateInterval = 1000;
@@ -46,56 +45,67 @@
 					minTickSize : [ 1, "second" ]
 				}
 			};
-
+			
+			// First fecth to the data
 			var plot;
 			$.ajax({
 				url : url_to_fecth,
 				method : 'GET',
 				dataType : 'json',
 				success : function(results) {
+					// This supports several plots in the same JSON file
+					var plts = []
+					for ( var plt = 0; plt < results.length; ++plt) {
 
-					var res = [];
-					for ( var i = 0; i < results.data.length; ++i) {
-						var x = new Date(results.data[i][0]);
-						var y = results.data[i][1];
-						res.push([ x, y ]);
+						var res = [];
+						for ( var i = 0; i < results[plt].data.length; ++i) {
+							var x = new Date(results[plt].data[i][0]);
+							var y = results[plt].data[i][1];
+							res.push([ x, y ]);
+						}
+
+						resToPlot = {
+							"label" : results[plt].label,
+							"data" : res
+						};
+						plts.push(resToPlot);
 					}
-
-					resToPlot = {
-						"label" : results.label,
-						"data" : res
-					};
-					plot = $.plot($("#placeholder"), [ resToPlot ], options);
+					;
+					// Initial plot
+					plot = $.plot($("#placeholder"), plts, options);
 
 				}
 			});
 
 			function update() {
-
-				//alert ('update');
 				$.ajax({
-					url : url_to_fecth,
-					method : 'GET',
-					dataType : 'json',
-					success : function(results) {
+							url : url_to_fecth,
+							method : 'GET',
+							dataType : 'json',
+							success : function(results) {
+								var plts = []
+								for ( var plt = 0; plt < results.length; ++plt) {
 
-						console.log("heres")
+									var res = [];
+									for ( var i = 0; i < results[plt].data.length; ++i) {
+										var x = new Date(
+												results[plt].data[i][0]);
+										var y = results[plt].data[i][1];
+										res.push([ x, y ]);
+									}
 
-						var res = [];
-						for ( var i = 0; i < results.data.length; ++i) {
-							var x = new Date(results.data[i][0]);
-							var y = results.data[i][1];
-							res.push([ x, y ]);
-						}
-						resToPlot = {
-							"label" : results.label,
-							"data" : res
-						};
-						plot.setData([ resToPlot ]);
-						plot.setupGrid();
-						plot.draw();
-					}
-				});
+									resToPlot = {
+										"label" : results[plt].label,
+										"data" : res
+									};
+									plts.push(resToPlot);
+								}
+								plot.setData(plts);
+								plot.setupGrid();
+								plot.draw();
+							}
+						});
+				// update the plot now for a certain given interval
 				setTimeout(update, updateInterval);
 			}
 			update();
