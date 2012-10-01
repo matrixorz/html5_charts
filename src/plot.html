@@ -46,7 +46,29 @@
 				}
 			};
 			
-			// First fecth to the data
+			// function to convert the json object in an array readable by FlotCharts
+			function convertJson2Arrays(results) {
+			    var plts = [];
+				for ( var plt = 0; plt < results.length; ++plt) {
+
+					var res = [];
+					for ( var i = 0; i < results[plt].data.length; ++i) {
+						var x = new Date(results[plt].data[i][0]);
+						var y = results[plt].data[i][1];
+						res.push([ x, y ]);
+					}
+
+					resToPlot = {
+						"label" : results[plt].label,
+						"data" : res
+					};
+					plts.push(resToPlot);
+				}
+				return plts
+			
+			}
+			
+			// First fecth the data
 			var plot;
 			$.ajax({
 				url : url_to_fecth,
@@ -54,23 +76,7 @@
 				dataType : 'json',
 				success : function(results) {
 					// This supports several plots in the same JSON file
-					var plts = []
-					for ( var plt = 0; plt < results.length; ++plt) {
-
-						var res = [];
-						for ( var i = 0; i < results[plt].data.length; ++i) {
-							var x = new Date(results[plt].data[i][0]);
-							var y = results[plt].data[i][1];
-							res.push([ x, y ]);
-						}
-
-						resToPlot = {
-							"label" : results[plt].label,
-							"data" : res
-						};
-						plts.push(resToPlot);
-					}
-					;
+					var plts =  convertJson2Arrays(results);
 					// Initial plot
 					plot = $.plot($("#placeholder"), plts, options);
 
@@ -83,23 +89,7 @@
 							method : 'GET',
 							dataType : 'json',
 							success : function(results) {
-								var plts = []
-								for ( var plt = 0; plt < results.length; ++plt) {
-
-									var res = [];
-									for ( var i = 0; i < results[plt].data.length; ++i) {
-										var x = new Date(
-												results[plt].data[i][0]);
-										var y = results[plt].data[i][1];
-										res.push([ x, y ]);
-									}
-
-									resToPlot = {
-										"label" : results[plt].label,
-										"data" : res
-									};
-									plts.push(resToPlot);
-								}
+								var plts =  convertJson2Arrays(results);
 								plot.setData(plts);
 								plot.setupGrid();
 								plot.draw();
